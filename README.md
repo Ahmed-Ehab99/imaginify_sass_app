@@ -391,33 +391,6 @@ POST / api / webhooks / stripe;
 - Secure transaction processing
 - Encrypted data transmission
 
-## 🚀 Deployment
-
-### Vercel Deployment (Recommended)
-
-1. **Connect Repository**
-
-   ```bash
-   vercel --prod
-   ```
-
-2. **Environment Variables**
-
-   - Add all environment variables to Vercel dashboard
-   - Configure webhook URLs for production
-
-3. **Domain Configuration**
-   - Set up custom domain
-   - Configure SSL certificates
-   - Update redirect URLs in Clerk
-
-### Alternative Deployment Options
-
-- **Netlify**: Static deployment with serverless functions
-- **Railway**: Full-stack deployment with database
-- **AWS**: EC2 with RDS and S3
-- **Digital Ocean**: Droplet with managed database
-
 ## 📈 Performance
 
 ### Optimization Features
@@ -428,59 +401,6 @@ POST / api / webhooks / stripe;
 - **Lazy Loading**: Component and image lazy loading
 - **Caching**: Strategic caching implementation
 
-### Performance Metrics
-
-- **Lighthouse Score**: 95+ across all categories
-- **Core Web Vitals**: Optimized for Google's metrics
-- **Bundle Size**: Optimized JavaScript bundles
-- **Image Loading**: Progressive image loading
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Commit your changes**
-   ```bash
-   git commit -m 'Add amazing feature'
-   ```
-4. **Push to the branch**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-5. **Open a Pull Request**
-
-### Development Guidelines
-
-- Follow TypeScript best practices
-- Write comprehensive tests
-- Update documentation
-- Follow conventional commit messages
-- Ensure responsive design
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Next.js Team** for the amazing framework
-- **Clerk** for authentication services
-- **Cloudinary** for image processing capabilities
-- **Stripe** for payment processing
-- **Vercel** for deployment platform
-- **Tailwind CSS** for styling framework
-
-## 📞 Support
-
-For support, email support@imaginify.com or join our Discord community.
-
----
-
-**Built with ❤️ by the Imaginify Team**
+**Built with ❤️ by Me 😊**
 
 _Transform your creative vision with AI-powered image processing._
