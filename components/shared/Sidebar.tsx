@@ -20,6 +20,7 @@ const Sidebar = () => {
             width={180}
             height={28}
             priority
+            className="w-48 h-auto"
           />
         </Link>
 

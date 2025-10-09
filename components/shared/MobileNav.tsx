@@ -12,9 +12,11 @@ import { SignedIn, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const MobileNav = () => {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   return (
     <header className="header">
@@ -32,7 +34,7 @@ const MobileNav = () => {
         <SignedIn>
           <UserButton />
 
-          <Sheet>
+          <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger>
               <Image
                 src="/assets/icons/menu.svg"
@@ -71,6 +73,7 @@ const MobileNav = () => {
                       <Link
                         className="sidebar-link cursor-pointer"
                         href={link.route}
+                        onClick={() => setOpen(false)}
                       >
                         <Image
                           src={link.icon}

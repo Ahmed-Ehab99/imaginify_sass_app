@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
@@ -22,7 +23,8 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
-      afterSignOutUrl={"/"}
+      signInFallbackRedirectUrl={"/"}
+      signUpFallbackRedirectUrl={"/"}
       appearance={{
         signIn: {
           variables: { colorPrimary: "#624cf5" },
@@ -36,6 +38,7 @@ export default function RootLayout({
         {/*NOTE: className => variable */}
         <body className={cn("font-IBMPlex antialiased", IBMPlex.className)}>
           {children}
+          <Toaster richColors closeButton />
         </body>
       </html>
     </ClerkProvider>

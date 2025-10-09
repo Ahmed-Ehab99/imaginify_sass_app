@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/api/webhooks/clerk/route.ts
+
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import { createClerkClient } from "@clerk/backend";
 import { NextRequest, NextResponse } from "next/server";

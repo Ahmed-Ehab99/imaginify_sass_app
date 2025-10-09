@@ -10,7 +10,15 @@ export async function createUser(user: CreateUserParams) {
   try {
     await connectToDatabase();
 
-    const newUser = await User.create(user);
+    // Use findOneAndUpdate with upsert to handle duplicate users
+    const newUser = await User.findOneAndUpdate(
+      { clerkId: user.clerkId },
+      user,
+      {
+        new: true,
+        upsert: true,
+      }
+    );
 
     return JSON.parse(JSON.stringify(newUser));
   } catch (error) {
@@ -23,9 +31,32 @@ export async function getUserById(userId: string) {
   try {
     await connectToDatabase();
 
-    const user = await User.findOne({ clerkId: userId });
+    let user = await User.findOne({ clerkId: userId });
 
-    if (!user) throw new Error("User not found");
+    if (!user) {
+      // If user doesn't exist, create them using Clerk data
+      const { createClerkClient } = await import("@clerk/backend");
+      const clerk = createClerkClient({
+        secretKey: process.env.CLERK_SECRET_KEY!,
+      });
+
+      const clerkUser = await clerk.users.getUser(userId);
+
+      if (clerkUser) {
+        const userPayload = {
+          clerkId: clerkUser.id,
+          email: clerkUser.emailAddresses[0]?.emailAddress ?? "",
+          username: clerkUser.username ?? "",
+          firstName: clerkUser.firstName ?? "",
+          lastName: clerkUser.lastName ?? "",
+          photo: clerkUser.imageUrl ?? "",
+        };
+
+        user = await createUser(userPayload);
+      } else {
+        throw new Error("User not found in Clerk");
+      }
+    }
 
     return JSON.parse(JSON.stringify(user));
   } catch (error) {
