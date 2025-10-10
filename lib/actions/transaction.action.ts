@@ -14,12 +14,6 @@ export async function checkoutCredits(transaction: CheckoutTransactionParams) {
 
     const amount = Number(transaction.amount) * 100;
 
-    // transaction.buyerId is already the MongoDB _id from the Credits page
-    console.log(
-      "🔵 Creating checkout session for MongoDB user ID:",
-      transaction.buyerId
-    );
-
     if (!transaction.buyerId) {
       throw new Error("Missing buyerId");
     }
@@ -47,9 +41,6 @@ export async function checkoutCredits(transaction: CheckoutTransactionParams) {
       cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/credits?canceled=true`,
     });
 
-    console.log("Stripe session ➡️", session);
-    console.log("✅ Stripe session created:", session.id);
-
     redirect(session.url!);
   } catch (error) {
     // Ignore NEXT_REDIRECT errors as they are normal for redirect() function
@@ -63,10 +54,7 @@ export async function checkoutCredits(transaction: CheckoutTransactionParams) {
 
 export async function createTransaction(transaction: CreateTransactionParams) {
   try {
-    console.log("🔵 Starting createTransaction with data:", transaction);
-
     await connectToDatabase();
-    console.log("✅ Database connected");
 
     // Validate required fields
     if (!transaction.stripeId) {
@@ -75,8 +63,6 @@ export async function createTransaction(transaction: CreateTransactionParams) {
     if (!transaction.buyerId) {
       throw new Error("Missing buyerId in transaction data");
     }
-
-    console.log("🔵 Creating transaction document...");
 
     // Create a new transaction with a buyerId
     const newTransaction = await Transaction.create({
@@ -88,17 +74,12 @@ export async function createTransaction(transaction: CreateTransactionParams) {
       createdAt: transaction.createdAt || new Date(),
     });
 
-    console.log("✅ Transaction created:", newTransaction);
-
-    // Update user credits
-    console.log("🔵 Updating user credits...");
     await updateCredits(transaction.buyerId, transaction.credits);
-    console.log("✅ Credits updated");
 
     return JSON.parse(JSON.stringify(newTransaction));
   } catch (error) {
     console.error("❌ Error in createTransaction:", error);
     handleError(error);
-    throw error; // Re-throw to see error in webhook response
+    throw error;
   }
 }

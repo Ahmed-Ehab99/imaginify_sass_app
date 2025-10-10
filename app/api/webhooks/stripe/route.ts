@@ -3,49 +3,15 @@ import { Types } from "mongoose";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-// Initialize Stripe with API version
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-09-30.clover",
 });
 
-/*
- * STRIPE WEBHOOK CONFIGURATION CHECKLIST:
- * 1. Go to Stripe Dashboard → Developers → Webhooks
- * 2. Find your webhook endpoint: https://your-domain.com/api/webhooks/stripe
- * 3. Verify it subscribes to: checkout.session.completed
- * 4. Check recent deliveries for failed attempts
- * 5. View Vercel Dashboard → Functions tab for server logs
- */
-
 export async function POST(request: Request) {
   try {
-    console.error("🔵 Webhook received at:", new Date().toISOString());
-
-    // Get raw body for signature verification
     const body = await request.text();
-    console.error("🔵 Webhook body length:", body.length);
-    console.error("🔵 First 100 chars of body:", body.substring(0, 100));
-    console.error(
-      "🔵 Is body valid JSON?",
-      (() => {
-        try {
-          JSON.parse(body);
-          return true;
-        } catch {
-          return false;
-        }
-      })()
-    );
-
     const sig = request.headers.get("stripe-signature");
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-
-    console.error("🔵 Stripe signature header:", sig);
-    console.error("🔵 Endpoint secret exists:", !!endpointSecret);
-    console.error(
-      "🔵 All request headers:",
-      Object.fromEntries(request.headers.entries())
-    );
 
     if (!sig) {
       console.error("❌ Missing stripe-signature header");
@@ -63,72 +29,27 @@ export async function POST(request: Request) {
     }
 
     let event: Stripe.Event;
-
     try {
       event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
-      console.error("✅ Webhook signature verified");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       console.error("❌ Webhook signature verification failed:", errorMessage);
       console.error("❌ Signature verification error details:", err);
-
-      // For development/testing, try to parse the event manually
-      if (
-        process.env.NODE_ENV === "development" ||
-        process.env.VERCEL_ENV === "preview"
-      ) {
-        console.error(
-          "🔧 Development mode: Attempting to parse event manually"
-        );
-        try {
-          const parsedBody = JSON.parse(body);
-          if (parsedBody.type && parsedBody.data) {
-            event = parsedBody as Stripe.Event;
-            console.error("🔧 Successfully parsed event manually");
-          } else {
-            throw new Error("Invalid event structure");
-          }
-        } catch (parseErr) {
-          console.error("❌ Manual parsing also failed:", parseErr);
-          return NextResponse.json(
-            { message: "Webhook error", error: errorMessage },
-            { status: 400 }
-          );
-        }
-      } else {
-        return NextResponse.json(
-          { message: "Webhook error", error: errorMessage },
-          { status: 400 }
-        );
-      }
+      return NextResponse.json(
+        {
+          message: "Webhook signature verification failed",
+          error: errorMessage,
+        },
+        { status: 400 }
+      );
     }
 
-    // Get the type
     const eventType = event.type;
-    console.error("🔵 Event type:", eventType);
-    console.error(
-      "🔵 Event data object:",
-      JSON.stringify(event.data.object, null, 2)
-    );
 
-    // Handle checkout.session.completed event
     if (eventType === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      console.error("🔵 Checkout session completed:", {
-        id: session.id,
-        amount_total: session.amount_total,
-        metadata: session.metadata,
-        payment_status: session.payment_status,
-        status: session.status,
-      });
-
-      // Only process if payment is actually completed
       if (session.payment_status !== "paid") {
-        console.error(
-          "❌ Payment not completed yet. Payment status:",
-          session.payment_status
-        );
         return NextResponse.json({
           message: "Payment not completed",
           payment_status: session.payment_status,
@@ -136,21 +57,18 @@ export async function POST(request: Request) {
       }
 
       if (!session.metadata?.buyerId) {
-        console.error("❌ Missing buyerId in session metadata");
         return NextResponse.json(
           { message: "Missing buyerId in metadata" },
           { status: 400 }
         );
       }
 
-      // Validate ObjectId format
       try {
         new Types.ObjectId(session.metadata.buyerId);
-      } catch (objIdError) {
+      } catch {
         console.error(
           "❌ Invalid ObjectId format for buyerId:",
-          session.metadata.buyerId,
-          objIdError
+          session.metadata.buyerId
         );
         return NextResponse.json(
           { message: "Invalid buyerId format" },
@@ -163,25 +81,18 @@ export async function POST(request: Request) {
         amount: session.amount_total ? session.amount_total / 100 : 0,
         plan: session.metadata?.plan || "",
         credits: Number(session.metadata?.credits) || 0,
-        buyerId: session.metadata?.buyerId, // This is MongoDB _id
+        buyerId: session.metadata?.buyerId,
         createdAt: new Date(),
       };
 
-      console.error("🔵 Creating transaction with data:", transaction);
-
       try {
         const newTransaction = await createTransaction(transaction);
-        console.error("✅ Transaction created successfully:", newTransaction);
         return NextResponse.json({
           message: "OK",
           transaction: newTransaction,
         });
       } catch (error) {
         console.error("❌ Error creating transaction:", error);
-        console.error(
-          "Error details:",
-          error instanceof Error ? error.stack : error
-        );
         return NextResponse.json(
           {
             message: "Failed to create transaction",
@@ -192,20 +103,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Handle other checkout session events for debugging
-    if (eventType.startsWith("checkout.session")) {
-      console.error("🔵 Other checkout session event:", eventType);
-      const session = event.data.object as Stripe.Checkout.Session;
-      console.error("🔵 Session details:", {
-        id: session.id,
-        status: session.status,
-        payment_status: session.payment_status,
-        metadata: session.metadata,
-      });
-    }
-
-    console.error("🔵 Unhandled event type:", eventType);
-    // Return 200 for unhandled event types
+    // For unhandled event types
     return NextResponse.json({ message: "Event received", type: eventType });
   } catch (error) {
     console.error("❌ Unexpected error in webhook:", error);

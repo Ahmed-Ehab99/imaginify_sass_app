@@ -93,6 +93,6 @@ export async function updateCredits(userId: string, creditFee: number) {
   } catch (error) {
     console.error("❌ Error in updateCredits:", error);
     handleError(error);
-    throw error; // Re-throw to propagate to webhook
+    throw error;
   }
 }

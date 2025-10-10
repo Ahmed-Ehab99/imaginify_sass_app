@@ -51,8 +51,6 @@ export async function POST(req: Request) {
     });
   }
 
-  // Get the ID and type
-  const { id } = evt.data;
   const eventType = evt.type;
 
   // CREATE
@@ -108,9 +106,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ message: "OK", user: deletedUser });
   }
-
-  console.log(`Webhook with an ID of ${id} and type of ${eventType}`);
-  console.log("Webhook body:", body);
 
   return new Response("", { status: 200 });
 }
