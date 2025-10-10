@@ -35,7 +35,6 @@ export default function RootLayout({
       }}
     >
       <html lang="en">
-        {/*NOTE: className => variable */}
         <body className={cn("font-IBMPlex antialiased", IBMPlex.className)}>
           {children}
           <Toaster richColors closeButton />

@@ -8,13 +8,14 @@ import { getUserImages } from "@/lib/actions/image.actions";
 import { getUserById } from "@/lib/actions/user.actions";
 
 const Profile = async ({ searchParams }: SearchParamProps) => {
-  const page = Number(searchParams?.page) || 1;
+  const { page } = await searchParams;
+  const pageNumber = Number(page) || 1;
   const { userId } = await auth();
 
   if (!userId) redirect("/sign-in");
 
   const user = await getUserById(userId);
-  const images = await getUserImages({ page, userId: user._id });
+  const images = await getUserImages({ page: pageNumber, userId: user._id });
 
   return (
     <>
@@ -54,7 +55,7 @@ const Profile = async ({ searchParams }: SearchParamProps) => {
         <Collection
           images={images?.data}
           totalPages={images?.totalPages}
-          page={page}
+          page={pageNumber}
         />
       </section>
     </>

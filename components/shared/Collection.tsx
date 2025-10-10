@@ -1,10 +1,5 @@
 "use client";
 
-import { CldImage } from "next-cloudinary";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-
 import {
   Pagination,
   PaginationContent,
@@ -14,7 +9,10 @@ import {
 import { transformationTypes } from "@/constants";
 import { IImage } from "@/lib/database/models/image.model";
 import { formUrlQuery } from "@/lib/utils";
-
+import { CldImage } from "next-cloudinary";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "../ui/button";
 import { Search } from "./Search";
 

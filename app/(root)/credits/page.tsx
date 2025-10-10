@@ -1,13 +1,12 @@
-import { auth } from "@clerk/nextjs/server";
-import Image from "next/image";
-import { redirect } from "next/navigation";
-
+import Checkout from "@/components/shared/Checkout";
 import Header from "@/components/shared/Header";
 import { Button } from "@/components/ui/button";
 import { plans } from "@/constants";
 import { getUserById } from "@/lib/actions/user.actions";
 import { SignedIn } from "@clerk/nextjs";
-import Checkout from "@/components/shared/Checkout";
+import { auth } from "@clerk/nextjs/server";
+import Image from "next/image";
+import { redirect } from "next/navigation";
 
 const Credits = async () => {
   const { userId } = await auth();
@@ -15,6 +14,7 @@ const Credits = async () => {
   if (!userId) redirect("/sign-in");
 
   const user = await getUserById(userId);
+  console.log(user);
 
   return (
     <>
@@ -66,7 +66,7 @@ const Credits = async () => {
                     plan={plan.name}
                     amount={plan.price}
                     credits={plan.credits}
-                    buyerId={user._id}
+                    buyerId={user?._id || ""}
                   />
                 </SignedIn>
               )}
