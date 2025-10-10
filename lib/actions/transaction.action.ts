@@ -47,10 +47,15 @@ export async function checkoutCredits(transaction: CheckoutTransactionParams) {
       cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/credits?canceled=true`,
     });
 
+    console.log("Stripe session ➡️", session);
     console.log("✅ Stripe session created:", session.id);
 
     redirect(session.url!);
   } catch (error) {
+    // Ignore NEXT_REDIRECT errors as they are normal for redirect() function
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error; // Re-throw redirect errors without logging
+    }
     console.error("❌ Error in checkoutCredits:", error);
     throw error;
   }

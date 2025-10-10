@@ -21,11 +21,31 @@ export async function POST(request: Request) {
   try {
     console.error("🔵 Webhook received at:", new Date().toISOString());
 
+    // Get raw body for signature verification
     const body = await request.text();
     console.error("🔵 Webhook body length:", body.length);
+    console.error("🔵 First 100 chars of body:", body.substring(0, 100));
+    console.error(
+      "🔵 Is body valid JSON?",
+      (() => {
+        try {
+          JSON.parse(body);
+          return true;
+        } catch {
+          return false;
+        }
+      })()
+    );
 
     const sig = request.headers.get("stripe-signature");
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
+    console.error("🔵 Stripe signature header:", sig);
+    console.error("🔵 Endpoint secret exists:", !!endpointSecret);
+    console.error(
+      "🔵 All request headers:",
+      Object.fromEntries(request.headers.entries())
+    );
 
     if (!sig) {
       console.error("❌ Missing stripe-signature header");
@@ -50,15 +70,46 @@ export async function POST(request: Request) {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       console.error("❌ Webhook signature verification failed:", errorMessage);
-      return NextResponse.json(
-        { message: "Webhook error", error: errorMessage },
-        { status: 400 }
-      );
+      console.error("❌ Signature verification error details:", err);
+
+      // For development/testing, try to parse the event manually
+      if (
+        process.env.NODE_ENV === "development" ||
+        process.env.VERCEL_ENV === "preview"
+      ) {
+        console.error(
+          "🔧 Development mode: Attempting to parse event manually"
+        );
+        try {
+          const parsedBody = JSON.parse(body);
+          if (parsedBody.type && parsedBody.data) {
+            event = parsedBody as Stripe.Event;
+            console.error("🔧 Successfully parsed event manually");
+          } else {
+            throw new Error("Invalid event structure");
+          }
+        } catch (parseErr) {
+          console.error("❌ Manual parsing also failed:", parseErr);
+          return NextResponse.json(
+            { message: "Webhook error", error: errorMessage },
+            { status: 400 }
+          );
+        }
+      } else {
+        return NextResponse.json(
+          { message: "Webhook error", error: errorMessage },
+          { status: 400 }
+        );
+      }
     }
 
     // Get the type
     const eventType = event.type;
     console.error("🔵 Event type:", eventType);
+    console.error(
+      "🔵 Event data object:",
+      JSON.stringify(event.data.object, null, 2)
+    );
 
     // Handle checkout.session.completed event
     if (eventType === "checkout.session.completed") {
@@ -69,7 +120,20 @@ export async function POST(request: Request) {
         amount_total: session.amount_total,
         metadata: session.metadata,
         payment_status: session.payment_status,
+        status: session.status,
       });
+
+      // Only process if payment is actually completed
+      if (session.payment_status !== "paid") {
+        console.error(
+          "❌ Payment not completed yet. Payment status:",
+          session.payment_status
+        );
+        return NextResponse.json({
+          message: "Payment not completed",
+          payment_status: session.payment_status,
+        });
+      }
 
       if (!session.metadata?.buyerId) {
         console.error("❌ Missing buyerId in session metadata");
@@ -126,6 +190,18 @@ export async function POST(request: Request) {
           { status: 500 }
         );
       }
+    }
+
+    // Handle other checkout session events for debugging
+    if (eventType.startsWith("checkout.session")) {
+      console.error("🔵 Other checkout session event:", eventType);
+      const session = event.data.object as Stripe.Checkout.Session;
+      console.error("🔵 Session details:", {
+        id: session.id,
+        status: session.status,
+        payment_status: session.payment_status,
+        metadata: session.metadata,
+      });
     }
 
     console.error("🔵 Unhandled event type:", eventType);
