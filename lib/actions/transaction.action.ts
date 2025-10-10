@@ -1,5 +1,6 @@
 "use server";
 
+import { Types } from "mongoose";
 import { redirect } from "next/navigation";
 import Stripe from "stripe";
 import Transaction from "../database/models/transaction.model";
@@ -78,7 +79,7 @@ export async function createTransaction(transaction: CreateTransactionParams) {
       amount: transaction.amount,
       plan: transaction.plan,
       credits: transaction.credits,
-      buyer: transaction.buyerId, // This should be the MongoDB _id, not clerkId
+      buyer: new Types.ObjectId(transaction.buyerId), // Convert string to ObjectId
       createdAt: transaction.createdAt || new Date(),
     });
 

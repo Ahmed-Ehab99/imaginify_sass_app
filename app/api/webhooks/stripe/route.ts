@@ -1,4 +1,5 @@
 import { createTransaction } from "@/lib/actions/transaction.action";
+import { Types } from "mongoose";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -7,12 +8,21 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-09-30.clover",
 });
 
+/*
+ * STRIPE WEBHOOK CONFIGURATION CHECKLIST:
+ * 1. Go to Stripe Dashboard → Developers → Webhooks
+ * 2. Find your webhook endpoint: https://your-domain.com/api/webhooks/stripe
+ * 3. Verify it subscribes to: checkout.session.completed
+ * 4. Check recent deliveries for failed attempts
+ * 5. View Vercel Dashboard → Functions tab for server logs
+ */
+
 export async function POST(request: Request) {
   try {
-    console.log("🔵 Webhook received at:", new Date().toISOString());
+    console.error("🔵 Webhook received at:", new Date().toISOString());
 
     const body = await request.text();
-    console.log("🔵 Webhook body length:", body.length);
+    console.error("🔵 Webhook body length:", body.length);
 
     const sig = request.headers.get("stripe-signature");
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -36,7 +46,7 @@ export async function POST(request: Request) {
 
     try {
       event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
-      console.log("✅ Webhook signature verified");
+      console.error("✅ Webhook signature verified");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       console.error("❌ Webhook signature verification failed:", errorMessage);
@@ -48,13 +58,13 @@ export async function POST(request: Request) {
 
     // Get the type
     const eventType = event.type;
-    console.log("🔵 Event type:", eventType);
+    console.error("🔵 Event type:", eventType);
 
     // Handle checkout.session.completed event
     if (eventType === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
 
-      console.log("🔵 Checkout session completed:", {
+      console.error("🔵 Checkout session completed:", {
         id: session.id,
         amount_total: session.amount_total,
         metadata: session.metadata,
@@ -69,6 +79,21 @@ export async function POST(request: Request) {
         );
       }
 
+      // Validate ObjectId format
+      try {
+        new Types.ObjectId(session.metadata.buyerId);
+      } catch (objIdError) {
+        console.error(
+          "❌ Invalid ObjectId format for buyerId:",
+          session.metadata.buyerId,
+          objIdError
+        );
+        return NextResponse.json(
+          { message: "Invalid buyerId format" },
+          { status: 400 }
+        );
+      }
+
       const transaction = {
         stripeId: session.id,
         amount: session.amount_total ? session.amount_total / 100 : 0,
@@ -78,11 +103,11 @@ export async function POST(request: Request) {
         createdAt: new Date(),
       };
 
-      console.log("🔵 Creating transaction with data:", transaction);
+      console.error("🔵 Creating transaction with data:", transaction);
 
       try {
         const newTransaction = await createTransaction(transaction);
-        console.log("✅ Transaction created successfully:", newTransaction);
+        console.error("✅ Transaction created successfully:", newTransaction);
         return NextResponse.json({
           message: "OK",
           transaction: newTransaction,
@@ -103,7 +128,7 @@ export async function POST(request: Request) {
       }
     }
 
-    console.log("🔵 Unhandled event type:", eventType);
+    console.error("🔵 Unhandled event type:", eventType);
     // Return 200 for unhandled event types
     return NextResponse.json({ message: "Event received", type: eventType });
   } catch (error) {

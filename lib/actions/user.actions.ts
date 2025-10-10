@@ -83,10 +83,16 @@ export async function updateCredits(userId: string, creditFee: number) {
       { new: true }
     );
 
-    if (!updatedUserCredits) throw new Error("User credits update failed");
+    if (!updatedUserCredits) {
+      const error = new Error("User credits update failed");
+      console.error("❌ Update credits error:", error);
+      throw error;
+    }
 
     return JSON.parse(JSON.stringify(updatedUserCredits));
   } catch (error) {
+    console.error("❌ Error in updateCredits:", error);
     handleError(error);
+    throw error; // Re-throw to propagate to webhook
   }
 }
