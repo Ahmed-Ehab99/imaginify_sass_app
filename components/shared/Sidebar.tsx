@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
+import { ModeButton } from "./ModeButton";
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -13,16 +14,19 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="flex size-full flex-col gap-4">
-        <Link href="/" className="sidebar-logo">
-          <Image
-            src="/assets/images/logo-text.svg"
-            alt="logo"
-            width={180}
-            height={28}
-            priority
-            className="w-48 h-auto"
-          />
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/" className="sidebar-logo">
+            <Image
+              src="/assets/images/logo-text.svg"
+              alt="logo"
+              width={180}
+              height={28}
+              priority
+              className="w-48 h-auto"
+            />
+          </Link>
+          <ModeButton/>
+        </div>
 
         <nav className="sidebar-nav">
           <SignedIn>
@@ -35,7 +39,7 @@ const Sidebar = () => {
                     className={`sidebar-nav_element group ${
                       isActive
                         ? "bg-purple-gradient text-white"
-                        : "text-gray-700"
+                        : "text-gray-700 dark:text-gray-500"
                     }`}
                   >
                     <Link className="sidebar-link" href={link.route}>
@@ -62,7 +66,7 @@ const Sidebar = () => {
                     className={`sidebar-nav_element group ${
                       isActive
                         ? "bg-purple-gradient text-white"
-                        : "text-gray-700"
+                        : "text-gray-700 dark:text-gray-500"
                     }`}
                   >
                     <Link className="sidebar-link" href={link.route}>

@@ -46,7 +46,7 @@ export const Collection = ({
   return (
     <>
       <div className="collection-heading">
-        <h2 className="h2-bold text-dark-600">Recent Edits</h2>
+        <h2 className="h2-bold text-dark-600 dark:text-gray-500">Recent Edits</h2>
         {hasSearch && <Search />}
       </div>
 
@@ -106,7 +106,7 @@ const Card = ({ image }: { image: IImage }) => {
           sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
         />
         <div className="flex-between">
-          <p className="p-20-semibold mr-3 line-clamp-1 text-dark-600">
+          <p className="p-20-semibold mr-3 line-clamp-1 text-dark-600 dark:text-gray-500">
             {image.title}
           </p>
           <Image

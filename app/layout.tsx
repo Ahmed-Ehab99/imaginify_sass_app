@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import { cn } from "@/lib/utils";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
@@ -34,10 +35,17 @@ export default function RootLayout({
         },
       }}
     >
-      <html lang="en">
-        <body className={cn("font-IBMPlex antialiased", IBMPlex.className)}>
-          {children}
-          <Toaster richColors closeButton />
+      <html lang="en" suppressHydrationWarning>
+        <body className={cn("antialiased", IBMPlex.className)}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster richColors closeButton />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
