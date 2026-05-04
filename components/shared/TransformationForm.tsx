@@ -41,7 +41,7 @@ export const formSchema = z.object({
 });
 
 const TransformationForm = ({
-  action,
+  actionType,
   data = null,
   type,
   userId,
@@ -60,7 +60,7 @@ const TransformationForm = ({
   const transformationType = transformationTypes[type];
 
   const initialValues =
-    data && action === "Update"
+    data && actionType === "Update"
       ? {
           title: data?.title,
           aspectRatio: data?.aspectRatio,
@@ -100,7 +100,7 @@ const TransformationForm = ({
         color: values.color,
       };
 
-      if (action === "Add") {
+      if (actionType === "Add") {
         try {
           const newImage = await addImage({
             image: imageData,
@@ -118,7 +118,7 @@ const TransformationForm = ({
         }
       }
 
-      if (action === "Update") {
+      if (actionType === "Update") {
         try {
           const updatedImage = await updateImage({
             image: {
