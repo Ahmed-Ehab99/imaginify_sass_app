@@ -1,15 +1,7 @@
-/* Imports */
 @import "tailwindcss";
-@import "tw-animate-css"; /* Ensure this plugin is compatible with v4 or remove if causing issues */
-@import "shadcn/tailwind.css";
-
-/* Custom Variant */
+@import "tw-animate-css";
 @custom-variant dark (&:is(.dark *));
 
-/* 
-  THEME CONFIGURATION 
-  Use @theme for design tokens (colors, fonts, spacing, etc.)
-*/
 @theme inline {
   /* Fonts */
   --font-heading: var(--font-sans);
@@ -84,10 +76,6 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 }
-
-/* 
-  GLOBAL STYLES & RESETS 
-*/
 
 /* Define Keyframes globally */
 @keyframes accordion-down {
@@ -204,7 +192,7 @@ body {
 }
 
 @utility auth {
-  @apply flex justify-center items-center min-h-screen w-full bg-purple-100;
+  @apply flex justify-center items-center min-h-screen w-full bg-[#5943F7];
 }
 
 @utility root {
@@ -295,7 +283,7 @@ body {
 }
 
 @utility search-field {
-  @apply border-0 bg-transparent text-dark-600 w-full placeholder:text-dark-400 h-[50px] font-medium text-[16px] leading-[140%] focus-visible:ring-offset-0 p-3 focus-visible:ring-transparent;
+  @apply border-0! bg-transparent! text-dark-600 w-full! placeholder:text-dark-400 h-[50px] font-medium text-[16px] leading-[140%] focus-visible:ring-offset-0! p-3 focus-visible:ring-transparent!;
 }
 
 @utility submit-button {
@@ -337,7 +325,7 @@ body {
 }
 
 @utility home-heading {
-  @apply h1-semibold max-w-[500px] flex-wrap text-center text-white shadow-sm;
+  @apply h1-semibold max-w-[500px] flex-wrap text-center text-white;
 }
 
 /* Credits Page */
@@ -402,7 +390,7 @@ body {
 }
 
 @utility media-uploader_cta {
-  @apply flex justify-center items-center flex h-72 cursor-pointer flex-col gap-5 rounded-[16px] border border-dashed bg-purple-100/20 shadow-inner;
+  @apply flex justify-center items-center h-72 cursor-pointer flex-col gap-5 rounded-[16px] border border-dashed bg-purple-100/20 shadow-inner;
 }
 
 @utility media-uploader_cta-image {

@@ -1,7 +1,7 @@
 import MobileNav from "@/components/shared/MobileNav";
 import Sidebar from "@/components/shared/Sidebar";
 import React from "react";
-import "../globals.css";
+// import "../globals.css";
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (

@@ -1,5 +1,6 @@
 "use server";
 
+import { clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import User from "../database/models/user.model";
 import { connectToDatabase } from "../database/mongoose";
@@ -18,12 +19,63 @@ export async function createUser(user: CreateUserParams) {
   }
 }
 
+/** When webhooks are unavailable (e.g. local dev), create the DB user from Clerk. */
+async function syncUserFromClerk(clerkId: string) {
+  const client = await clerkClient();
+  const cu = await client.users.getUser(clerkId);
+
+  const email =
+    cu.emailAddresses.find((e) => e.id === cu.primaryEmailAddressId)
+      ?.emailAddress ?? cu.emailAddresses[0]?.emailAddress;
+
+  if (!email) {
+    throw new Error("User has no email address");
+  }
+
+  const username =
+    (cu.username && cu.username.trim()) ||
+    `${email.split("@")[0]}_${clerkId.slice(-8)}`;
+
+  const params: CreateUserParams = {
+    clerkId,
+    email,
+    username,
+    firstName: cu.firstName ?? "",
+    lastName: cu.lastName ?? "",
+    photo: cu.imageUrl ?? "",
+  };
+
+  await connectToDatabase();
+
+  try {
+    const doc = await User.create(params);
+    const newUser = JSON.parse(JSON.stringify(doc));
+    await client.users.updateUserMetadata(clerkId, {
+      publicMetadata: {
+        userId: newUser._id,
+      },
+    });
+  } catch (err: unknown) {
+    const code =
+      typeof err === "object" && err !== null && "code" in err
+        ? (err as { code?: number }).code
+        : undefined;
+    if (code !== 11000) handleError(err);
+    // E11000: race with webhook or parallel request — row already exists
+  }
+}
+
 // READ
 export async function getUserById(userId: string) {
   try {
     await connectToDatabase();
 
-    const user = await User.findOne({ clerkId: userId });
+    let user = await User.findOne({ clerkId: userId });
+
+    if (!user) {
+      await syncUserFromClerk(userId);
+      user = await User.findOne({ clerkId: userId });
+    }
 
     if (!user) throw new Error("User not found");
 
