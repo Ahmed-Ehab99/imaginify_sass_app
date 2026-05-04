@@ -8,7 +8,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { navLinks } from "@/constants";
-import { SignedIn, UserButton } from "@clerk/nextjs";
+import { Show, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -31,7 +31,7 @@ const MobileNav = () => {
         />
       </Link>
       <nav className="flex gap-2">
-        <SignedIn>
+        <Show when="signed-in">
           <UserButton />
 
           <Sheet open={open} onOpenChange={setOpen}>
@@ -89,7 +89,7 @@ const MobileNav = () => {
               </ul>
             </SheetContent>
           </Sheet>
-        </SignedIn>
+        </Show>
       </nav>
     </header>
   );

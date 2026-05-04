@@ -1,7 +1,7 @@
 "use client";
 
 import { navLinks } from "@/constants";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { Show, SignOutButton, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,11 +25,11 @@ const Sidebar = () => {
               className="w-48 h-auto"
             />
           </Link>
-          <ModeButton/>
+          <ModeButton />
         </div>
 
         <nav className="sidebar-nav">
-          <SignedIn>
+          <Show when="signed-in">
             <ul className="sidebar-nav_elements">
               {navLinks.slice(0, 6).map((link) => {
                 const isActive = link.route === pathname;
@@ -82,17 +82,17 @@ const Sidebar = () => {
                   </li>
                 );
               })}
-              <li className="flex-center cursor-pointer gap-2 p-4">
+              <li className="flex justify-center items-center cursor-pointer gap-2 p-4">
                 <UserButton showName />
               </li>
             </ul>
-          </SignedIn>
+          </Show>
 
-          <SignedOut>
+          <SignOutButton>
             <Button asChild className="button bg-purple-gradient bg-cover">
               <Link href="/sign-in">Login</Link>
             </Button>
-          </SignedOut>
+          </SignOutButton>
         </nav>
       </div>
     </aside>

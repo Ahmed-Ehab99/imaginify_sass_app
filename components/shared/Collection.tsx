@@ -46,14 +46,16 @@ export const Collection = ({
   return (
     <>
       <div className="collection-heading">
-        <h2 className="h2-bold text-dark-600 dark:text-gray-500">Recent Edits</h2>
+        <h2 className="h2-bold text-dark-600 dark:text-gray-500">
+          Recent Edits
+        </h2>
         {hasSearch && <Search />}
       </div>
 
       {images.length > 0 ? (
         <ul className="collection-list">
           {images.map((image) => (
-            <Card image={image} key={image._id} />
+            <Card image={image} key={image._id.toString()} />
           ))}
         </ul>
       ) : (
@@ -73,7 +75,7 @@ export const Collection = ({
               <PaginationPrevious className="hover:bg-transparent hover:text-white" />
             </Button>
 
-            <p className="flex-center p-16-medium w-fit flex-1">
+            <p className="flex justify-center items-center p-16-medium w-fit flex-1">
               {page} / {totalPages}
             </p>
 

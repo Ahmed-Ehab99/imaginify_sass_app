@@ -3,7 +3,7 @@ import Header from "@/components/shared/Header";
 import { Button } from "@/components/ui/button";
 import { plans } from "@/constants";
 import { getUserById } from "@/lib/actions/user.actions";
-import { SignedIn } from "@clerk/nextjs";
+import { Show } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import { redirect } from "next/navigation";
@@ -26,7 +26,7 @@ const Credits = async () => {
         <ul className="credits-list">
           {plans.map((plan) => (
             <li key={plan.name} className="credits-item">
-              <div className="flex-center flex-col gap-3">
+              <div className="flex justify-center items-center flex-col gap-3">
                 <Image src={plan.icon} alt="check" width={50} height={50} />
                 <p className="p-20-semibold mt-2 text-purple-500">
                   {plan.name}
@@ -62,14 +62,14 @@ const Credits = async () => {
                   Free Consumable
                 </Button>
               ) : (
-                <SignedIn>
+                <Show when="signed-in">
                   <Checkout
                     plan={plan.name}
                     amount={plan.price}
                     credits={plan.credits}
                     buyerId={user?._id || ""}
                   />
-                </SignedIn>
+                </Show>
               )}
             </li>
           ))}
